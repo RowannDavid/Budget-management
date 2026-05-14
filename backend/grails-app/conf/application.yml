@@ -30,6 +30,8 @@ spring:
 
 ---
 grails:
+    cors:
+        enabled: true
     mime:
         disable:
             accept:
@@ -108,3 +110,6 @@ environments:
                 testOnReturn: false
                 jdbcInterceptors: ConnectionState
                 defaultTransactionIsolation: 2
+
+jwt:
+    secret: 'my_super_secret_jwt_key_budget_manager_2026'
