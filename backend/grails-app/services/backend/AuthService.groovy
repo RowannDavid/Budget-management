@@ -1,69 +1,49 @@
 package backend
 
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder
 import grails.gorm.transactions.Transactional
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder
 
 @Transactional
 class AuthService {
 
-    JwtService jwtService
-    def passwordEncoder = new BCryptPasswordEncoder()
+    BCryptPasswordEncoder passwordEncoder = new BCryptPasswordEncoder()
 
-    Map register(String fullname, String email, String password, String currency) {
-        if (User.findByEmail(email)) {
-            return [success: false, message: "Email already exists"]
+    Users register(Map data) {
+
+        Users existingUser = Users.findByEmail(data.email)
+
+        if (existingUser) {
+            throw new Exception("Email deja utilisé")
         }
 
-        def user = new User(
-            fullname: fullname,
-            email: email,
-            password: passwordEncoder.encode(password),
-            currency: currency ?: "XOF",
-            role: "USER"
-        )
+        Users users = new Users()
 
-        return User.withTransaction { status ->
-            if (!user.save(flush: true)) {
-                status.setRollbackOnly()
-                return [success: false, message: "Failed to create user", errors: user.errors.allErrors]
-            }
+        users.name = data.name
+        users.email = data.email
+        // hash du mot de passe
+        users.password = passwordEncoder.encode(data.password)
+        users.currency = data.currency ?: 'FCFA'
 
-            return [
-                success: true,
-                message: "User registered successfully",
-                user: [
-                    id: user.id,
-                    fullname: user.fullname,
-                    email: user.email,
-                    role: user.role
-                ]
-            ]
-        }
+        users.save(flush: true)
+
+        return users
     }
 
-    Map login(String email, String password) {
-        def user = User.findByEmail(email)
-        
-        if (!user) {
-            return [success: false, message: "Invalid credentials"]
+    Users login(String email, String password) {
+
+        Users users = Users.findByEmail(email)
+
+        if (!users) {
+            throw new Exception("utilisateur introuvable")
         }
 
-        if (!passwordEncoder.matches(password, user.password)) {
-            return [success: false, message: "Invalid credentials"]
+        boolean passwordValidator = passwordEncoder.matches(password, users.password)
+
+        if (!passwordValidator) {
+            throw new Exception('password invalide')
         }
 
-        String token = jwtService.generateToken(user)
 
-        return [
-            success: true,
-            token: token,
-            user: [
-                id: user.id,
-                fullname: user.fullname,
-                email: user.email,
-                currency: user.currency,
-                role: user.role
-            ]
-        ]
+        return users
     }
 }

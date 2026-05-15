@@ -32,6 +32,21 @@ spring:
 grails:
     cors:
         enabled: true
+        allowedOrigins:
+            - "http://localhost:5173"
+            - "http://localhost:3000"
+            - "http://127.0.0.1:5173"
+            - "http://127.0.0.1:3000"
+        allowedMethods:
+            - GET
+            - POST
+            - PUT
+            - DELETE
+            - OPTIONS
+        allowedHeaders:
+            - Content-Type
+            - Authorization
+            - Accept
     mime:
         disable:
             accept:
@@ -83,7 +98,7 @@ dataSource:
 environments:
     development:
         dataSource:
-            dbCreate: update # 'update' est plus sûr que 'create-drop' pour ne pas perdre vos données de test à chaque reboot
+            dbCreate: create # Changé de 'update' à 'create' pour recréer la table avec la colonne id
             url: jdbc:postgresql://localhost:5432/budget_manager_db
     test:
         dataSource:
@@ -110,6 +125,3 @@ environments:
                 testOnReturn: false
                 jdbcInterceptors: ConnectionState
                 defaultTransactionIsolation: 2
-
-jwt:
-    secret: 'my_super_secret_jwt_key_budget_manager_2026'

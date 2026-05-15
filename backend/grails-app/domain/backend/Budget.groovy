@@ -2,20 +2,18 @@ package backend
 
 class Budget {
 
-    BigDecimal amount
-    Integer month
-    Integer year
-
-    User user
-    Category category // If null, it's a general budget
+    BigDecimal amount_limit;
+    Integer month;
+    Integer year;
 
     Date dateCreated
     Date lastUpdated
 
+    static belongsTo = [users:Users, category:Category]
+
     static constraints = {
-        amount min: 0.0G
+        amount_limit min: 0.0
         month min: 1, max: 12
         year min: 2000
-        category nullable: true
     }
 }

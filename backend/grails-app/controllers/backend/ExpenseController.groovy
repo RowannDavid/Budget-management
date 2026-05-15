@@ -1,9 +1,10 @@
 package backend
 
 import grails.rest.RestfulController
-import grails.gorm.transactions.Transactional
 
-class ExpenseController extends RestfulController<Expense> {
+class ExpenseController extends RestfulController {
+
+    ExpenseService expenseService
 
     static responseFormats = ['json']
 
@@ -11,33 +12,78 @@ class ExpenseController extends RestfulController<Expense> {
         super(Expense)
     }
 
-    @Override
-    def index(Integer max) {
-        params.max = Math.min(max ?: 10, 100)
-        User currentUser = request.getAttribute('user') as User
-        
-        def expenseList = Expense.findAllByUser(currentUser, params)
-        def totalCount = Expense.countByUser(currentUser)
+    def index() {
 
-        response.addHeader("X-Total-Count", totalCount.toString())
-        respond expenseList
+        Users user = Users.get(request.getAttribute("userId"))
+
+        respond expenseService.getUserExpenses(user)
     }
 
-    @Override
-    @Transactional
     def save() {
-        User currentUser = request.getAttribute('user') as User
-        def expense = new Expense()
-        bindData(expense, request.JSON)
-        expense.user = currentUser
 
-        if (expense.hasErrors()) {
-            transactionStatus.setRollbackOnly()
-            respond expense.errors, view:'create'
-            return
+        try {
+
+            Users user = Users.get(request.getAttribute("userId"))
+
+            Expense expense = expenseService.createExpense(
+                    request.JSON,
+                    user
+            )
+
+            respond([
+                    success: true,
+                    data: expense
+            ])
+
+        } catch(Exception e) {
+
+            respond([
+                    success: false,
+                    message: e.message
+            ], status: 400)
         }
+    }
 
-        expense.save flush:true
-        respond expense, [status: 201]
+    def update() {
+
+        try {
+
+            Expense expense = expenseService.updateExpense(
+                    params.id as Long,
+                    request.JSON
+            )
+
+            respond([
+                    success: true,
+                    data: expense
+            ])
+
+        } catch(Exception e) {
+
+            respond([
+                    success: false,
+                    message: e.message
+            ], status: 400)
+        }
+    }
+
+    def delete() {
+
+        try {
+
+            expenseService.deleteExpense(params.id as Long)
+
+            respond([
+                    success: true,
+                    message: "Expense deleted"
+            ])
+
+        } catch(Exception e) {
+
+            respond([
+                    success: false,
+                    message: e.message
+            ], status: 400)
+        }
     }
 }

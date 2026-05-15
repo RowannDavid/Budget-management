@@ -2,21 +2,19 @@ package backend
 
 class Account {
 
-    String name
-    BigDecimal balance = 0.0G
-
-    User user
+    String name;
+    BigDecimal balance = 0.0;
+    String type;
 
     Date dateCreated
     Date lastUpdated
 
-    static hasMany = [
-        expenses: Expense,
-        incomes: Income
-    ]
+    static hasMany = [expense:Expense, income:Income]
+    static belongsTo = [users:Users]
 
     static constraints = {
         name blank: false
-        balance nullable: false
+        balance min: 0.0
+        type blank: false
     }
 }

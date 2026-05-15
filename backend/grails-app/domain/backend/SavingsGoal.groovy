@@ -2,20 +2,23 @@ package backend
 
 class SavingsGoal {
 
-    String name
-    BigDecimal targetAmount
-    BigDecimal currentAmount = 0.0G
-    Date deadline
-
-    User user
+    String title;
+    BigDecimal targetAmount;
+    BigDecimal currentAmount;
+    Date deadline;
 
     Date dateCreated
     Date lastUpdated
 
+    static belongsTo = [users:Users]
+
     static constraints = {
-        name blank: false
-        targetAmount min: 0.0G
-        currentAmount min: 0.0G
+        title blank: false
+        targetAmount min: 0.0
+        currentAmount min: 0.0
         deadline nullable: true
     }
 }
+
+
+

@@ -1,54 +1,66 @@
 package backend
 
-import grails.gorm.transactions.Transactional
+
 
 class AuthController {
 
+    AuthService authService;
+    JWTService jwtService
+
     static responseFormats = ['json']
 
-    AuthService authService
+    def register() {
+        try {
+            Users users = authService.register(request.JSON)
+            respond(
+                    [
+                            success: true,
+                            message: "le compte est crée",
+                            data: [
+                                    id: users.id,
+                                    name: users.name,
+                                    email: users.email
+                            ]
+                    ]
+            )
 
-    def login() {
-        def requestData = request.JSON
-        
-        if (!requestData?.email || !requestData?.password) {
-            render(status: 400, contentType: "application/json") {
-                [success: false, message: "Email and password are required"]
-            }
-            return
-        }
-
-        def result = authService.login(requestData.email, requestData.password)
-
-        if (result.success) {
-            render(status: 200, contentType: "application/json") { result }
-        } else {
-            render(status: 401, contentType: "application/json") { result }
+        } catch (Exception e) {
+            respond(
+                    [
+                            success: false,
+                            message: e.message
+                    ], status: 400
+            )
         }
     }
 
-    @Transactional
-    def register() {
-        def requestData = request.JSON
+    def login() {
+        try {
+            Users users = authService.login(
+                    request.JSON.email,
+                    request.JSON.password)
 
-        if (!requestData?.email || !requestData?.password || !requestData?.fullname) {
-            render(status: 400, contentType: "application/json") {
-                [success: false, message: "Fullname, email and password are required"]
-            }
-            return
-        }
+            String token = jwtService.generateToken(users)
+            respond(
+                    [
+                            success: true,
+                            message: "la connexion est reussi",
+                            token: token,
+                            data: [
+                                    id: users.id,
+                                    name: users.name,
+                                    email: users.email
+                            ]
+                    ]
+            )
 
-        def result = authService.register(
-            requestData.fullname, 
-            requestData.email, 
-            requestData.password, 
-            requestData.currency
-        )
-
-        if (result.success) {
-            render(status: 201, contentType: "application/json") { result }
-        } else {
-            render(status: 400, contentType: "application/json") { result }
+        } catch (Exception e) {
+            respond(
+                    [
+                            success: false,
+                            message: e.message
+                    ], status: 401
+            )
         }
     }
 }
