@@ -5,7 +5,7 @@ package backend
 class AuthController {
 
     AuthService authService;
-    JWTService jwtService
+    JwtService jwtService
 
     static responseFormats = ['json']
 

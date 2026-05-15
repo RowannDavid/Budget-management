@@ -5,6 +5,10 @@ import grails.gorm.transactions.Transactional
 @Transactional
 class ExpenseService {
 
+    List<Expense> getUserExpenses(Users users) {
+        return Expense.findAllByUsers(users)
+    }
+
     Expense createExpense (Map data, Users users) {
 
         Expense expense = new Expense()
@@ -18,13 +22,9 @@ class ExpenseService {
         expense.category = Category.get(data.categoryId)
         expense.account = Account.get(data.accountId)
 
-        expense.save(flush: true)
+        expense.save(flush: true, failOnError: true)
 
         return expense
-    }
-
-    List<Expense> getUserExpenses(Users users) {
-        return Expense.findAllByUsers(users)
     }
 
     Expense updateExpense (Long id, Map data) {
@@ -39,10 +39,11 @@ class ExpenseService {
         expense.description = data.description
         expense.payment_method = data.payment_method
 
-        expense.save(flush: true)
+        expense.save(flush: true, failOnError: true)
 
         return expense
     }
+    
     void deleteExpense (Long id) {
 
         Expense expense = Expense.get(id)

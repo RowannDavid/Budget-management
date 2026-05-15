@@ -5,6 +5,7 @@ import grails.rest.RestfulController
 class ExpenseController extends RestfulController {
 
     ExpenseService expenseService
+    CurrentUserService currentUserService
 
     static responseFormats = ['json']
 
@@ -14,16 +15,20 @@ class ExpenseController extends RestfulController {
 
     def index() {
 
-        Users user = Users.get(request.getAttribute("userId"))
+        Users user = currentUserService.getCurrentUser(request)
 
-        respond expenseService.getUserExpenses(user)
+        respond([
+                success: true,
+                data: expenseService.getUserExpenses(user),
+                message: "Dépenses récupérées"
+        ])
     }
 
     def save() {
 
         try {
 
-            Users user = Users.get(request.getAttribute("userId"))
+            Users user = currentUserService.getCurrentUser(request)
 
             Expense expense = expenseService.createExpense(
                     request.JSON,

@@ -7,9 +7,9 @@ import jakarta.servlet.http.HttpServletRequest
 import jakarta.servlet.http.HttpServletResponse
 import org.springframework.web.filter.OncePerRequestFilter
 
-class JWTAuthenticationFilter extends OncePerRequestFilter {
+class JwtAuthenticationFilter extends OncePerRequestFilter {
 
-    JWTService jwtService
+    JwtService jwtService
 
     @Override
     protected void doFilterInternal(
@@ -18,10 +18,12 @@ class JWTAuthenticationFilter extends OncePerRequestFilter {
             FilterChain filterChain
     ) {
 
-        String path = request.servletPath
+        String path = request.requestURI
+        println "--- Filter hit for path: ${path} ---"
 
         // routes publiques
-        if (path == "/api/login" || path == "/api/register") {
+        if (path.endsWith("/api/login") || path.endsWith("/api/register")) {
+            println "Skipping filter for public route"
             filterChain.doFilter(request, response)
             return
         }
@@ -39,15 +41,15 @@ class JWTAuthenticationFilter extends OncePerRequestFilter {
         try {
 
             String token = authHeader.substring(7)
-
             def claims = jwtService.validateToken(token)
 
+            println "Token valid for user: ${claims.get("userId")}"
             request.setAttribute("userId", claims.get("userId"))
 
             filterChain.doFilter(request, response)
 
         } catch(Exception e) {
-
+            println "Auth error: ${e.message}"
             response.status = 401
             response.contentType = "application/json"
             response.writer.write('{"success": false, "message":"Token invalide"}')

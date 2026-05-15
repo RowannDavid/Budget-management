@@ -24,7 +24,33 @@ class AuthService {
         users.password = passwordEncoder.encode(data.password)
         users.currency = data.currency ?: 'FCFA'
 
-        users.save(flush: true)
+        users.save(flush: true, failOnError: true)
+
+        // --- LOGIQUE FINTECH : Initialisation de l'environnement ---
+
+        // 1. Création du compte par défaut
+        Account mainAccount = new Account()
+        mainAccount.name = "Compte Principal"
+        mainAccount.balance = 0.0
+        mainAccount.type = "CASH"
+        mainAccount.users = users
+        mainAccount.save(flush: true, failOnError: true)
+
+        // 2. Création des catégories par défaut
+        List<String> defaultCategories = [
+                "Transport", "Nourriture", "Santé",
+                "Loyer", "Factures", "Loisirs"
+        ]
+
+        defaultCategories.each { catName ->
+            new Category(
+                    name: catName,
+                    type: "EXPENSE",
+                    color: "#4A90E2", // Couleur par défaut
+                    icon: "category",  // Icone par défaut
+                    users: users
+            ).save(flush: true, failOnError: true)
+        }
 
         return users
     }

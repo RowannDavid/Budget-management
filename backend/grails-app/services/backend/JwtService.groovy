@@ -7,10 +7,10 @@ import io.jsonwebtoken.Claims
 import java.security.Key
 import javax.crypto.spec.SecretKeySpec
 
-class JWTService {
+class JwtService {
 
     private static final String SECRET =
-            "budget-manager-secret-key"
+            "budget-manager-secret-key-very-long-and-secure-32-chars"
 
     private Key getKey() {
 

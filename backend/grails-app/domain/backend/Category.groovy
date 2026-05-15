@@ -8,7 +8,7 @@ class Category {
     Date dateCreated
     Date lastUpdated
 
-    static hasmany = [expense:Expense,budgets:Budget]
+    static hasMany = [expense:Expense,budgets:Budget]
     static belongsTo = [users:Users]
 
     static constraints = {

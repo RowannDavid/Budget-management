@@ -16,7 +16,7 @@ class IncomeService {
         income.users = users
         income.account = Account.get(data.accountId)
 
-        income.save(flush: true)
+        income.save(flush: true, failOnError: true)
 
         return income
     }

@@ -5,6 +5,7 @@ import grails.rest.RestfulController
 class IncomeController extends RestfulController {
 
     IncomeService incomeService
+    CurrentUserService currentUserService
 
     static responseFormats = ['json']
 
@@ -14,16 +15,20 @@ class IncomeController extends RestfulController {
 
     def index() {
 
-        Users user = Users.get(request.getAttribute("userId"))
+        Users user = currentUserService.getCurrentUser(request)
 
-        respond incomeService.getUserIncomes(user)
+        respond([
+                success: true,
+                data: incomeService.getUserIncomes(user),
+                message: "Revenus récupérés"
+        ])
     }
 
     def save() {
 
         try {
 
-            Users user = Users.get(request.getAttribute("userId"))
+            Users user = currentUserService.getCurrentUser(request)
 
             Income income = incomeService.createIncome(
                     request.JSON,
